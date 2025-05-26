@@ -1,17 +1,28 @@
 version: 2.1
 
-
 jobs:
   test:
     docker:
       - image: cimg/python:3.11
+    working_directory: ~/project
     steps:
       - checkout
-      - run: pip install fastapi uvicorn
       - run:
-          name: Smoke Test
+          name: Install Dependencies
           command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install -r mood-tracker/server/requirements.txt
+      - run:
+          name: Run Smoke Test
+          command: |
+            . venv/bin/activate
             python -c "import fastapi; print('FastAPI OK')"
+      - run:
+          name: Run Pytest
+          command: |
+            . venv/bin/activate
+            PYTHONPATH=./mood-tracker pytest mood-tracker/server/tests/
 
 workflows:
   version: 2
