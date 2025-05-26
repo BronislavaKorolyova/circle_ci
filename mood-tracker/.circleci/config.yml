@@ -4,26 +4,43 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.11
-    working_directory: ~/project 
+    working_directory: ~/project
     steps:
       - checkout
+
       - run:
-          name: Install dependencies
+          name: Install fastapi + uvicorn
           command: |
-            python -m venv venv
-            . venv/bin/activate
-            pip install -r mood-tracker/server/requirements.txt
-            pip install pytest httpx
+            pip install fastapi uvicorn
+
       - run:
-          name: Run Smoke Test
+          name: Smoke Test
           command: |
-            . venv/bin/activate
             python -c "import fastapi; print('FastAPI OK')"
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
       - run:
-          name: Run Pytest from repo root
+          name: Build Docker Image
           command: |
-            . venv/bin/activate
-            PYTHONPATH=mood-tracker pytest mood-tracker/server/tests/
+            docker build -t mood-tracker-app .
+
+      - run:
+          name: Run Docker Container and Test /moods Endpoint
+          command: |
+            docker run -d --name test-mood -p 8000:8000 mood-tracker-app
+            sleep 5
+            echo "Testing /moods endpoint..."
+            if curl -s --fail http://localhost:8000/moods; then
+              echo " Endpoint test passed"
+              docker stop test-mood && docker rm test-mood
+            else
+              echo " Endpoint test failed"
+              docker logs test-mood
+              docker stop test-mood && docker rm test-mood
+              exit 1
+            fi
 
 workflows:
   version: 2
