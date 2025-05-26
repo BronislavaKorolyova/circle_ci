@@ -2,15 +2,21 @@ from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
+from pathlib import Path
+
+# Define absolute path to the client directory
+BASE_DIR = Path(__file__).resolve().parent.parent  # goes from server/ to mood-tracker/
+CLIENT_DIR = BASE_DIR / "client"
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="client"), name="static")
+app.mount("/static", StaticFiles(directory=CLIENT_DIR), name="static")
 
 mood_log = []
 
 @app.get("/", response_class=HTMLResponse)
 def serve_page():
-    with open("client/index.html") as f:
+    index_path = CLIENT_DIR / "index.html"
+    with open(index_path, encoding="utf-8") as f:
         return f.read()
 
 @app.post("/submit")
