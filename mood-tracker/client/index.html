@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Mood Tracker</title>
+</head>
+<body>
+  <h1>How Are You Feeling Today?</h1>
+  <form id="moodForm">
+    <label>
+      Mood:
+      <select name="mood" required>
+        <option value="😊 Happy">😊 Happy</option>
+        <option value="😞 Sad">😞 Sad</option>
+        <option value="😴 Tired">😴 Tired</option>
+        <option value="😠 Angry">😠 Angry</option>
+        <option value="😐 Meh">😐 Meh</option>
+      </select>
+    </label>
+    <br><br>
+    <input type="text" name="note" placeholder="Optional note...">
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Previous Entries</h2>
+  <ul id="moodList"></ul>
+
+  <script>
+    async function loadMoods() {
+      const res = await fetch('/moods');
+      const data = await res.json();
+      const ul = document.getElementById('moodList');
+      ul.innerHTML = '';
+      data.entries.forEach(entry => {
+        const li = document.createElement('li');
+        li.innerText = `${entry.time} - ${entry.mood} ${entry.note ? '- ' + entry.note : ''}`;
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('moodForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      await fetch('/submit', {
+        method: 'POST',
+        body: form
+      });
+      e.target.reset();
+      loadMoods();
+    });
+
+    loadMoods();
+  </script>
+</body>
+</html>
+
