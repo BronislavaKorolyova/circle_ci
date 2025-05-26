@@ -4,15 +4,16 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.11
-    working_directory: ~/project
+    working_directory: ~/project 
     steps:
       - checkout
       - run:
-          name: Install Dependencies
+          name: Set up Python and install dependencies
           command: |
             python -m venv venv
             . venv/bin/activate
             pip install -r mood-tracker/server/requirements.txt
+            pip install pytest httpx
       - run:
           name: Run Smoke Test
           command: |
@@ -22,7 +23,7 @@ jobs:
           name: Run Pytest
           command: |
             . venv/bin/activate
-            PYTHONPATH=./mood-tracker pytest mood-tracker/server/tests/
+            PYTHONPATH=mood-tracker pytest mood-tracker/server/tests/
 
 workflows:
   version: 2
